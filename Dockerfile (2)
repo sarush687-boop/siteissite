@@ -1,0 +1,75 @@
+FROM python:3.9-slim
+
+# Install ffmpeg
+RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /code
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    python3-dev \
+    tesseract-ocr \
+    libtesseract-dev \
+    tesseract-ocr-eng \
+    unzip \
+    curl \
+    wget \
+    gnupg \
+    libxml2-dev \
+    libxslt-dev \
+    fonts-liberation \
+    libnss3 \
+    libfontconfig1 \
+    libglib2.0-0 \
+    libgtk-3-0 \
+    libxss1 \
+    xvfb \
+    libgl1 \
+    libasound2 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcairo2 \
+    libcups2 \
+    libdbus-1-3 \
+    libgbm1 \
+    libpango-1.0-0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libxtst6 \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/4.00/tessdata/
+
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
+    apt-get update && \
+    apt-get install -y google-chrome-stable && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN google-chrome --version
+
+
+
+
+
+RUN mkdir -p /tmp/huggingface_cache /tmp/easyocr_cache /tmp/paddleocr && \
+    chmod -R 777 /tmp/huggingface_cache /tmp/easyocr_cache /tmp/paddleocr
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
+
+COPY . .
+
+ENV PORT=7860 \
+    HOST=0.0.0.0 \
+    MAX_WORKERS=1 \
+    WORKER_TIMEOUT=300 \
+    TRANSFORMERS_CACHE=/tmp/huggingface_cache \
+    HF_HOME=/tmp/huggingface_cache \
+    EASYOCR_MODULE_PATH=/tmp/easyocr_cache \
+    PADDLEOCR_HOME=/tmp/paddleocr
+
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860", "--workers", "1"]
