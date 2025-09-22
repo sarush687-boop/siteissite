@@ -1,5 +1,7 @@
 setuptools>=65.0.0
-wheel
+wheel>=0.40.0
+pip>=25.1.1
+
 fastapi>=0.95.0
 pydantic>=1.10.0,<2.0.0
 uvicorn>=0.15.0
@@ -21,7 +23,6 @@ webvtt-py
 faster-whisper
 python-docx
 Pillow
-python-multipart
 pdfminer.six
 python-pptx
 beautifulsoup4
@@ -36,6 +37,3 @@ paddleocr
 paddlepaddle
 openai-whisper
 reportlab
-python-docx
-
-
